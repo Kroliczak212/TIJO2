@@ -1,0 +1,79 @@
+# VetCRM Receptionist Module - Docker Compose
+# Author: Bartłomiej Król
+#
+# Uruchomienie: docker-compose up --build
+# Dostęp: http://localhost:8080
+# Login: recepcja@vetcrm.pl / Recepcja123!
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: vetcrm-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: vetcrm
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - vetcrm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vetcrm-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=vetcrm-test-secret-key-2024
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=vetcrm
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - vetcrm-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vetcrm-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - vetcrm-network
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  vetcrm-network:
+    driver: bridge

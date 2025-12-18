@@ -1,0 +1,18 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    watch: {
+      usePolling: true  // Wymagane dla Docker volume mounts (Windows/Mac)
+    },
+    proxy: {
+      '/api': {
+        target: 'http://backend:3001',  // Nazwa serwisu z docker-compose
+        changeOrigin: true
+      }
+    }
+  }
+});

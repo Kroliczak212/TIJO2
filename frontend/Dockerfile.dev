@@ -1,0 +1,16 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Zainstaluj zależności
+COPY package*.json ./
+RUN npm install
+
+# Skopiuj kod (będzie nadpisany przez volume mount w dev)
+COPY . .
+
+# Expose Vite dev server port
+EXPOSE 5173
+
+# Uruchom Vite dev server z hot reload
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

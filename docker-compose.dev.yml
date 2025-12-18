@@ -1,0 +1,90 @@
+# VetCRM - Docker Compose dla DEVELOPMENTU (z hot reload)
+# Użycie: docker-compose -f docker-compose.dev.yml up
+#
+# Hot reload: 
+# - Backend: nodemon automatycznie restartuje przy zmianie plików
+# - Frontend: Vite automatycznie przeładowuje przeglądarkę
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: vetcrm-db-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: vetcrm
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data-dev:/var/lib/mysql
+    networks:
+      - vetcrm-network-dev
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (DEV MODE z nodemon)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: vetcrm-backend-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - JWT_SECRET=vetcrm-test-secret-key-2024
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=vetcrm
+    ports:
+      - "3001:3001"
+    volumes:
+      # Mount kodu źródłowego dla live reload
+      - ./backend/src:/app/src
+      - /app/node_modules  # anonymous volume - chroni node_modules kontenera
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - vetcrm-network-dev
+    command: npm run dev
+
+  # Frontend (DEV MODE z Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: vetcrm-frontend-dev
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount kodu źródłowego dla hot reload
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - /app/node_modules  # anonymous volume - chroni node_modules kontenera
+    depends_on:
+      - backend
+    networks:
+      - vetcrm-network-dev
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  mysql-data-dev:
+    driver: local
+
+networks:
+  vetcrm-network-dev:
+    driver: bridge

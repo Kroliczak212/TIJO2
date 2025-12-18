@@ -1,0 +1,16 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Zainstaluj zależności
+COPY package*.json ./
+RUN npm install
+
+# Skopiuj kod (będzie nadpisany przez volume mount w dev)
+COPY . .
+
+# Expose port
+EXPOSE 3001
+
+# Użyj nodemon dla auto-restart
+CMD ["npm", "run", "dev"]

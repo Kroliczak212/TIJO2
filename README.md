@@ -52,59 +52,61 @@ VetCRM - Moduł Recepcjonisty to samodzielna aplikacja webowa do zarządzania pr
 
 ---
 
-## Instalacja
+## Instalacja i Uruchomienie
 
-### Wymagania
-- Node.js >= 18.x
-- npm >= 9.x
+### ✅ Wymagania
+- Docker Desktop
+- Docker Compose
 
-### Krok 1: Instalacja zależności backendu
+### 🚀 Uruchomienie (Development mode z hot reload)
+
 ```bash
-cd test_rec_module/backend
-npm install
+docker-compose -f docker-compose.dev.yml up --build
 ```
 
-### Krok 2: Inicjalizacja bazy danych
-```bash
-npm run db:init
-```
+**Aplikacja gotowa!**
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:3001
+- **Swagger Docs:** http://localhost:3001/api-docs
 
-### Krok 3: Instalacja zależności frontendu
+### 🔑 Dane logowania
+- **Email:** recepcja@vetcrm.pl
+- **Hasło:** Recepcja123!
+
+### 🛑 Zatrzymanie
 ```bash
-cd ../frontend
-npm install
+docker-compose -f docker-compose.dev.yml down
 ```
 
 ---
 
-## Uruchomienie
+### Opcja alternatywna: Uruchomienie bez Dockera
 
-### Opcja 1: Docker (zalecane)
+**Wymagania:** Node.js >= 18.x, MySQL 8.0
 
+#### 1. Instalacja zależności
 ```bash
-cd test_rec_module
-docker-compose up --build
+cd backend && npm install
+cd ../frontend && npm install
 ```
 
-Aplikacja będzie dostępna pod adresem: **http://localhost:8080**
-
-### Opcja 2: Ręczne uruchomienie
-
-#### Backend (port 3001)
+#### 2. Konfiguracja bazy danych
 ```bash
-cd test_rec_module/backend
-npm start
+cd backend
+npm run db:init
 ```
 
-#### Frontend (port 5173)
+#### 3. Uruchomienie
 ```bash
-cd test_rec_module/frontend
-npm run dev
+# Terminal 1 - Backend
+cd backend && npm run dev
+
+# Terminal 2 - Frontend
+cd frontend && npm run dev
 ```
 
-### Dane logowania
-- **Email:** recepcja@vetcrm.pl
-- **Hasło:** Recepcja123!
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:3001
 
 ---
 

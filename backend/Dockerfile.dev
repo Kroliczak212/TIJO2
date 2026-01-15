@@ -9,8 +9,13 @@ RUN npm install
 # Skopiuj kod (będzie nadpisany przez volume mount w dev)
 COPY . .
 
+# Skopiuj entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expose port
 EXPOSE 3001
 
-# Użyj nodemon dla auto-restart
+# Użyj entrypoint do auto-inicjalizacji DB
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["npm", "run", "dev"]
